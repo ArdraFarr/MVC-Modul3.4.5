@@ -1,14 +1,16 @@
 <?php
 
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductCatalogController;
+use App\Http\Controllers\CartController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// --- ROUTE KATALOG M4 ---
+Route::get('/', [ProductCatalogController::class, 'index'])->name('shop.index');
+Route::get('/produk/{product:slug}', [ProductCatalogController::class, 'show'])->name('shop.show');
+
 
 // --- ROUTE AUTENTIKASI M1 ---
 Route::middleware('guest')->group(function () {
@@ -21,6 +23,15 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 
+// --- ROUTE PELANGGAN (CUSTOMER) M5 ---
+Route::middleware(['auth', 'role:customer'])->group(function () {
+    Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/keranjang/{product}', [CartController::class, 'store'])->name('cart.store');
+    Route::patch('/keranjang/{product}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/keranjang/{product}', [CartController::class, 'destroy'])->name('cart.destroy');
+});
+
+
 // --- ROUTE ADMIN M2 ---
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -29,6 +40,3 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
     Route::resource('products', AdminProductController::class)->except('show');
 });
-
-Route::get('/', [ProductCatalogController::class, 'index'])->name('shop.index');
-Route::get('/produk/{product:slug}', [ProductCatalogController::class, 'show'])->name('shop.show');

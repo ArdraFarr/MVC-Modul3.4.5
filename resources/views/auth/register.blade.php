@@ -13,4 +13,4 @@ old('name') }}" required>
 </label>
 <button class="btn">Daftar</button>
 </form>
-</div>@endsectio
+</div>@endsection
